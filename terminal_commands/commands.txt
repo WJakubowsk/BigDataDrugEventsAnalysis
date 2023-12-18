@@ -1,0 +1,20 @@
+# git clone repo
+cd
+mkdir project
+cd project
+git clone https://github.com/WJakubowsk/BigDataProject.git
+
+# conda installation (in root dir)
+cd
+wget https://repo.anaconda.com/archive/Anaconda3-2023.07-2-Linux-x86_64.sh
+chmod +x Anaconda3-2023.07-2-Linux-x86_64.sh 
+sh Anaconda3-2023.07-2-Linux-x86_64.sh 
+source ~/.bashrc
+
+# conda environment create from yaml file - from scripts/ dir
+cd /home/vagrant/project/BigDataProject/scripts
+conda env create -f environment.yml
+
+# hdfs create directories
+hdfs dfs -mkdir /user/vagrant/project
+hdfs dfs -mkdir /user/vagrant/project/nifi_in
