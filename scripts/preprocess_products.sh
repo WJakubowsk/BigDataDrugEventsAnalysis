@@ -3,4 +3,4 @@
 . /home/vagrant/anaconda3/etc/profile.d/conda.sh
 conda activate bigdata
 
-python /home/vagrant/project/BigDataProject/scripts/preprocess_products.py
+python3.9 /home/vagrant/project/BigDataProject/scripts/preprocess_products.py
