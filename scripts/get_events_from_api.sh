@@ -6,8 +6,6 @@ end_date=$(date +"%Y%m%d")
 
 current_date=$start_date
 
-echo $end_date
-
 while [ $start_date -lt $end_date ]; do
     filename="/home/vagrant/project/BigDataProject/data/api/${current_date}.json"
 
