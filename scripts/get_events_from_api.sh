@@ -1,6 +1,6 @@
 #!/bin/bash
 
-start_date="19390101"
+start_date="20000101"
 
 end_date=$(date +"%Y%m%d")
 
@@ -11,7 +11,12 @@ while [ $start_date -lt $end_date ]; do
 
     url="https://api.fda.gov/drug/event.json?api_key=SYDGOVhKmq00Zdk2CI1bedQaki7xf4bsiGR8ZDVo&search=receivedate:\[${current_date}+TO+${current_date}\]&limit=1000"
 
-    curl -k --compressed -X GET "$url" -o "$filename"
+    response=$(curl -k --compressed -X GET "$url" | jq '{ results: .results }')
+
+    # Check if the "results" section is not empty before saving
+    if [ ! -z "$response" ]; then
+        echo "$response" > "$filename"
+    fi
 
     current_date=$(date -d "$current_date + 1 day" +%Y%m%d)
 done
