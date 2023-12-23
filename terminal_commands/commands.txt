@@ -15,6 +15,10 @@ source ~/.bashrc
 cd /home/vagrant/project/BigDataProject/scripts
 conda env create -f environment.yml
 
+# download jq for API filtering
+sudo apt update
+sudo apt install jq --yes
+
 # hdfs create directories
 hdfs dfs -mkdir /user/vagrant/project
 hdfs dfs -mkdir /user/vagrant/project/nifi_in
