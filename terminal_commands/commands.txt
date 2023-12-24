@@ -22,3 +22,22 @@ sudo apt install jq --yes
 # hdfs create directories
 hdfs dfs -mkdir /user/vagrant/project
 hdfs dfs -mkdir /user/vagrant/project/nifi_in
+
+# hbase initialize thrift & zookeeper server
+. /usr/local/hbase/bin/hbase thrift &
+sudo -- sh -c 'export JAVA_HOME=/usr/local/java && 
+/usr/local/hbase/bin/start-hbase.sh'
+sudo -- sh -c 'export JAVA_HOME=/usr/local/java && 
+/usr/local/hbase/bin/hbase-daemon.sh start regionserver'
+
+# make bash scripts executable
+directory="/home/vagrant/project/BigDataProject/scripts"
+if [ -d "$directory" ]; then
+    for file in "$directory"/*; do
+        if [ -f "$file" ] && [ "${file: -3}" == ".sh" ]; then
+            chmod +x "$file"
+        fi
+    done
+else
+    echo "Directory '$directory' does not exist."
+fi
