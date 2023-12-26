@@ -8,7 +8,7 @@ hdfs_host = 'node1'
 hdfs_port = 50070
 hdfs_csv_path = '/user/vagrant/project/nifi_in/Products.csv'
 hdfs_preprocessed_csv_path = '/user/vagrant/project/nifi_in/preprocessed_drugs.csv'
-local_preprocessed_csv_path = '/home/vagrant/project/BigDataProject/data/preprocessed_Drugs.csv'
+local_preprocessed_csv_path = '/home/vagrant/project/BigDataProject/data/preprocessed_drugs.csv'
 hive_table_name = 'drugs'
 
 hdfs_client = InsecureClient(f'http://{hdfs_host}:{hdfs_port}', user = "vagrant")
