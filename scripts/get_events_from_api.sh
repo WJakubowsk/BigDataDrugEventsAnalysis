@@ -4,7 +4,7 @@ export HADOOP_HOME=/usr/local/hadoop
 export HADOOP_CONF_DIR=$HADOOP_HOME/etc/hadoop
 export PATH=$PATH:$HADOOP_HOME/bin
 
-start_date="20220101" #"19390101 is the beginning of the data, replace it if you have enough space ond disk"
+start_date="20230101" #"19390101 is the beginning of the data, replace it if you have enough space ond disk"
 
 end_date=$(date +"%Y%m%d")
 
