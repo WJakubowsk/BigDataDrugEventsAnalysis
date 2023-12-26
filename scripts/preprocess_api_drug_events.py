@@ -8,8 +8,6 @@ def create_hbase_table(connection, table_name, column_families):
         table_name,
         {cf: dict() for cf in column_families}
     )
-    
-    return concatenated_data
 
 def map_column_to_nested_dict(column: str):
     keys = column.split('.')
@@ -22,14 +20,14 @@ def map_column_to_nested_dict(column: str):
 
     return nested_dict
 
-def extract_information_from_record(record_data: Dict, columnmapping: Dict[str, str]):
+def extract_information_from_record(record_data: Dict, column_mapping: Dict[str, str]):
     extracted_data = {}
-    for col, mapped_col in column_mapping:
+    for col, mapped_col in column_mapping.items():
         current_data = result
         try:
             nested_cols = col.split('.')
             for nested_col in nested_cols:
-                if current_data[nested_col] isinstance(current_data, list):
+                if isinstance(current_data[nested_col], list):
                     current_data = current_data[nested_col][0] 
                 else:
                     current_data = current_data[nested_col]
@@ -49,10 +47,11 @@ column_families = ['report', 'patient', 'drug']
 hdfs_client = InsecureClient(f'http://{hdfs_host}:{hdfs_port}')
 
 connection = happybase.Connection(hbase_host)
-print('created connection')
-if hbase_table_name not in connection.tables():
+
+if hbase_table_name.encode() not in connection.tables():
     create_hbase_table(connection, hbase_table_name, column_families)
-print('created table')
+
+table = connection.table(hbase_table_name)
 
 column_mapping = {
     'safetyreportid': 'report:id',
@@ -70,20 +69,17 @@ column_mapping = {
     'patient.drug.openfda.generic_name': 'drug:generic_name'
     }
 
-
-idx = 0
-events_files = client.list(hdfs_folder_path)
+events_files = hdfs_client.list(hdfs_folder_path)
 for file in events_files:
-    file_path = folder_path + '/' + file
-    with client.read(file_path) as reader:
+    file_path = hdfs_folder_path + '/' + file
+    with hdfs_client.read(file_path) as reader:
         print(f'loading data from {file}')
         data = json.load(reader)
         if 'results' in data:
             for result in data['results']:
-                row_key = f'{idx}'
                 extracted_data = extract_information_from_record(result, column_mapping)
+                row_key = f'{extracted_data["report:id"]}'
                 table.put(row_key, extracted_data)
-                idx += 1
 
 connection.close()
 hdfs_client.close()
