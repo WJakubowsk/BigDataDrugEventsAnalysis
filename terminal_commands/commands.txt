@@ -4,11 +4,14 @@ mkdir project
 cd project
 git clone https://github.com/WJakubowsk/BigDataProject.git
 
+# copy Products and country_codes CSV using WinSCP into the newly created data/ folder in project root dir.
+mkdir data
+
 # conda installation (in root dir)
 cd ~
 wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
 chmod +x Miniconda3-latest-Linux-x86_64.sh
-sh Miniconda3-latest-Linux-x86_64.sh # yes/enter to all question
+sh Miniconda3-latest-Linux-x86_64.sh # yes/enter to all question, wtch out for skipping conda license agreements
 source ~/.bashrc  
 
 # conda environment create from yaml file - from scripts/ dir
