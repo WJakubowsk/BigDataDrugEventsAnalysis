@@ -1,76 +1,89 @@
 import json
 from hdfs import InsecureClient
 import happybase
+from typing import List, Dict
 
 def create_hbase_table(connection, table_name, column_families):
     connection.create_table(
         table_name,
         {cf: dict() for cf in column_families}
     )
-
-
-def load_and_concat_json(client, folder_path):
-    concatenated_data = []
-    file_statuses = client.list(folder_path)
-    for file_status in file_statuses:
-        file_path = folder_path + '/' + file_status['pathSuffix']
-        with client.read(file_path) as reader:
-            data = json.load(reader)
-            if 'error' not in data:
-                if 'results' in data:
-                    concatenated_data.extend(data['results'])
     
     return concatenated_data
 
+def map_column_to_nested_dict(column: str):
+    keys = column.split('.')
+    nested_dict = {}
+    current_dict = nested_dict
+
+    for key in keys:
+        current_dict[key] = {}
+        current_dict = current_dict[key]
+
+    return nested_dict
+
+def extract_information_from_record(record_data: Dict, columnmapping: Dict[str, str]):
+    extracted_data = {}
+    for col, mapped_col in column_mapping:
+        current_data = result
+        try:
+            nested_cols = col.split('.')
+            for nested_col in nested_cols:
+                if current_data[nested_col] isinstance(current_data, list):
+                    current_data = current_data[nested_col][0] 
+                else:
+                    current_data = current_data[nested_col]
+            extracted_data[mapped_col] = current_data
+        except (KeyError, TypeError):
+            extracted_data[mapped_col] = None
+    return extracted_data
 
 hdfs_host = 'node1'
 hdfs_port = 50070
-folder_path = '/user/vagrant/project/nifi_in/api' 
+hdfs_folder_path = '/user/vagrant/project/nifi_in/api' 
 
 hbase_host = 'localhost'
 hbase_table_name = 'events'
-column_families = ['description', 'patient', 'drug']
-
-description_columns = [
-    'report_id', 'report_date', 'reporter_country'
-]
-
-patient_columns = [
-    'sex', 'reaction', 'age', 'weight',  'death', 'death_date'
-]
-
-drug_columns = [
-    'characterization_id', 'medicinal_product_name', 'auth_number', 'administration_route',
-    'brand_name', 'substance_name', 'application_number', 'manufacturer_name', 'generic_name'
-]
-
-column_families = {
-    'description': {'max_versions': 1},
-    'patient': {'max_versions': 1},
-    'drug': {'max_versions': 1}
-}
-
+column_families = ['report', 'patient', 'drug']
 
 hdfs_client = InsecureClient(f'http://{hdfs_host}:{hdfs_port}')
 
 connection = happybase.Connection(hbase_host)
-
-if hbase_table_name.encode() not in connection.tables():
+print('created connection')
+if hbase_table_name not in connection.tables():
     create_hbase_table(connection, hbase_table_name, column_families)
-    
-table = connection.table(table_name)
+print('created table')
 
-json_data = load_and_concat_json(hdfs_client, folder_path)
+column_mapping = {
+    'safetyreportid': 'report:id',
+    'receivedate': 'report:date',
+    'primarysource.reportercountry': 'report:country',
+    'patient.patientsex': 'patient:sex',
+    'patient.reaction.reactionmeddrapt': 'patient:reaction',
+    'patient.patientagegroup': 'patient:age_group',
+    'patient.patientdeath.patientdeathdate': 'patient:death_date',
+    'patient.drug.openfda.application_number': 'drug:administration_route',
+    'patient.drug.medicinalproduct': 'drug:medicinal_product_name',
+    'patient.drug.openfda.substance_name': 'drug:substance_name',
+    'patient.drug.openfda.brand_name': 'drug:brand_name',
+    'patient.drug.openfda.manufacturer_name': 'drug:manufacturer_name',
+    'patient.drug.openfda.generic_name': 'drug:generic_name'
+    }
 
-print(json_data)
 
-# for idx, row in enumerate(json_data, start=1):
-#     row_key = f'{idx}'
-#     description_data = {f'race:{col}': str(row[col]).encode() for col in description_columns if col in df.columns}
-#     patient_data = {f'race:{col}': str(row[col]).encode() for col in description_columns if col in df.columns}
-#     drug_data = {f'race:{col}': str(row[col]).encode() for col in description_columns if col in df.columns}
-
-#     table.put(row_key, row)
+idx = 0
+events_files = client.list(hdfs_folder_path)
+for file in events_files:
+    file_path = folder_path + '/' + file
+    with client.read(file_path) as reader:
+        print(f'loading data from {file}')
+        data = json.load(reader)
+        if 'results' in data:
+            for result in data['results']:
+                row_key = f'{idx}'
+                extracted_data = extract_information_from_record(result, column_mapping)
+                table.put(row_key, extracted_data)
+                idx += 1
 
 connection.close()
 hdfs_client.close()
