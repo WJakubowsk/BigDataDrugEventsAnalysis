@@ -23,7 +23,7 @@ def map_column_to_nested_dict(column: str):
 def extract_information_from_record(record_data: Dict, column_mapping: Dict[str, str]):
     extracted_data = {}
     for col, mapped_col in column_mapping.items():
-        current_data = result
+        current_data = record_data
         try:
             nested_cols = col.split('.')
             for nested_col in nested_cols:
@@ -73,7 +73,6 @@ events_files = hdfs_client.list(hdfs_folder_path)
 for file in events_files:
     file_path = hdfs_folder_path + '/' + file
     with hdfs_client.read(file_path) as reader:
-        print(f'loading data from {file}')
         data = json.load(reader)
         if 'results' in data:
             for result in data['results']:
