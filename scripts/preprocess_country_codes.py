@@ -14,22 +14,24 @@ hdfs_client = InsecureClient(f'http://{hdfs_host}:{hdfs_port}', user = "vagrant"
 
 with hdfs_client.read(hdfs_csv_path) as reader:
     df = pd.read_csv(reader, sep=",")
-    
+
+df_filtered = df.copy()    
+df_filtered['Name'] = df_filtered['Name'].str.split(',').str[0]
 
 conn = hive.Connection(host=hive_host, port=hive_port, auth=None, database='default')
 cursor = conn.cursor()
 
 create_table_query = f'''
 CREATE TABLE IF NOT EXISTS {hive_table_name} (
-    country VARCHAR(100),
-    code VARCHAR(100)
+    country VARCHAR(150),
+    code VARCHAR(150)
 )
 '''
 
 cursor.execute("USE default")
 cursor.execute(create_table_query)
 
-df_mapped = df.rename(columns={
+df_mapped = df_filtered.rename(columns={
     'Name': 'country',
     'Code': 'code'
     })
