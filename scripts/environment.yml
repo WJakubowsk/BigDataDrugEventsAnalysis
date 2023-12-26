@@ -40,6 +40,7 @@ dependencies:
       - six==1.16.0
       - thrift==0.16.0
       - thrift-sasl==0.4.3
+      - thriftpy2==0.4.17
       - tzdata==2023.3
       - urllib3==2.1.0
 prefix: /home/vagrant/miniconda3/envs/bigdata
