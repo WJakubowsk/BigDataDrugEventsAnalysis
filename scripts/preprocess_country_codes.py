@@ -45,7 +45,6 @@ insert_query = f"INSERT INTO {hive_table_name} ({columns_str}) VALUES (%s, %s)"
 rows_to_insert = [tuple(row) for row in df_mapped.values]
 
 for row in rows_to_insert:
-    print(insert_query, row)
     cursor.execute(insert_query, row)
 
 conn.commit()
