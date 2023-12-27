@@ -18,9 +18,23 @@ source ~/.bashrc
 cd /home/vagrant/project/BigDataProject/scripts
 conda env create -f environment.yml
 
+# set OpenFDA API Key in the get_events_from_api.sh scripts
+set OPENFDA_API_KEY="<YOUR API KEY>"
+
 # download jq for API filtering
 sudo apt update
 sudo apt install jq --yes
+
+# add port forwarding rules
+ssh -L 8020:localhost:8020 vagrant@localhost
+ssh -L 8088:localhost:8088 vagrant@localhost
+ssh -L 9083:localhost:9083 vagrant@localhost
+ssh -L 9090:localhost:9090 vagrant@localhost
+ssh -L 9443:localhost:9443 vagrant@localhost
+ssh -L 10000:localhost:10000 vagrant@localhost
+ssh -L 5010:localhost:50010 vagrant@localhost
+ssh -L 5070:localhost:50070 vagrant@localhost
+
 
 # hdfs create directories
 hdfs dfs -mkdir /user/vagrant/project
