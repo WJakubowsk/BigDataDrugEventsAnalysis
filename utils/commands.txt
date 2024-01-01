@@ -19,7 +19,7 @@ cd /home/vagrant/project/BigDataProject/scripts
 conda env create -f environment.yml
 
 # set OpenFDA API Key in the get_events_from_api.sh scripts
-set OPENFDA_API_KEY="<YOUR API KEY>"
+export OPENFDA_API_KEY="<YOUR API KEY>"
 
 # download jq for API filtering
 sudo apt update
