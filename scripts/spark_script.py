@@ -3,7 +3,7 @@ import logging
 import happybase
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType
-from pyspark.sql.functions import regexp_extract, col, when
+from pyspark.sql.functions import regexp_extract, col, when, year, month, to_date
 
 # Logging configuration
 formatter = logging.Formatter('[%(asctime)s] %(levelname)s @ line %(lineno)d: %(message)s')
@@ -68,6 +68,9 @@ def preprocess_events(events_df):
         DataFrame: The preprocessed 'events' DataFrame.
     """
     events_df = events_df.withColumn("ApplNo", regexp_extract(events_df["administration_route"], r'\d+', 0))
+    # zakomentować 70, odkomentować 72
+    # events_df = events_df.withColumn("application_number", regexp_extract(events_df["administration_route"], r'\d+', 0).cast("int"))
+    events_df = events_df.withColumn("date", to_date(events_df["date"], "yyyyMMdd"))
     events_df = events_df.withColumn("sex", when(col("sex") == "1", "Male").when(col("sex") == "2", "Female").otherwise("Unknown"))
     events_df = events_df.withColumn("age_group",
                                      when(col("age_group") == "1", "Neonate")
@@ -91,8 +94,8 @@ def preprocess_country_codes(country_codes_df):
     Returns:
         DataFrame: The preprocessed 'country_codes' DataFrame.
     """
-    country_codes_df = country_codes_df.withColumnRenamed("Name", "country_name")
-    country_codes_df = country_codes_df.withColumnRenamed("Code", "country")
+    country_codes_df = country_codes_df.withColumnRenamed("country", "country_name")
+    country_codes_df = country_codes_df.withColumnRenamed("code", "country")
 
     return country_codes_df
 
@@ -113,6 +116,13 @@ def merge_data(events_df, country_codes_df, drugs_df):
         .join(country_codes_df, on="country", how="left") \
         .join(drugs_df, on=events_df["ApplNo"] == drugs_df["ApplNo"], how="left") \
         .drop(drugs_df["ApplNo"])
+    
+    # zakomentować 115-118, odkomentować 122-125
+
+    # merged_df = events_df \
+    #     .join(country_codes_df, on="country", how="left") \
+    #     .join(drugs_df, on=events_df["application_number"] == drugs_df["application_number"], how="left") \
+    #     .drop(drugs_df["application_number"])
 
     return merged_df
 
@@ -146,13 +156,14 @@ def main():
     ])
 
     events_df = spark.createDataFrame(events_data, schema)
-    events_df = preprocess_events(events_df)
 
     logger.info("Reading table 'country_codes'")
     country_codes_df = spark.sql("select * from country_codes")
 
     logger.info("Reading table 'drugs'")
-    drugs_df = spark.sql("select * from drugs")
+    drugs_df = spark.read.option("header", True).csv('hdfs://localhost:8020/user/vagrant/project/nifi_in/preprocessed_drugs.csv')
+    # zakomentować 164, odkomentować 166
+    # drugs_df = spark.sql("select * from drugs")
 
     # show basic info
     logger.info("Previewing 'events'")
@@ -174,6 +185,7 @@ def main():
 
     logger.info("Preprocessing 'country_codes'")
     country_codes_df = preprocess_country_codes(country_codes_df)
+    country_codes_df.show()
 
     # merge data
     logger.info("Data merging")
@@ -187,6 +199,6 @@ def main():
     logger.info("Parquet conversion")
     merged_df.write.format("parquet").mode("overwrite").save("/user/vagrant/project/BigDataProject/data/merged.parquet")
 
-
+    
 if __name__ == "__main__":
     main()
