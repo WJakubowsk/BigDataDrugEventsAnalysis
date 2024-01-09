@@ -9,7 +9,8 @@
     - `DrugEventsAnalysis.pbix` : Power BI analysis dashboard of FDA Drug Events from year 2023.
     - `DrugEventsAnalysis.pdf` : Power BI analysis report of FDA Drug Events from year 2023.   
   - `spark`
-    - `XXX
+    - `spark_script.py`: PySpark script for data preprocessing and merging.
+    - `visualization_tests.py`: PySpark script for PowerBI visualizations testing purpose.
 
 - `data`
   put your source data files here.
